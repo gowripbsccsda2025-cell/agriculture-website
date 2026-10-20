@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriNova | Smart Farming</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="brand">🌱 AgriNova</div>
+    <p>Grow Smarter. Harvest Better.</p>
+    <nav>
+        <a href="#agriculture">Agriculture</a>
+        <a href="#weather">Weather</a>
+        <a href="#fertilizer">Fertilizer</a>
+        <a href="#disease">Crop Health</a>
+        <a href="#water">Water Planner</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <div>
+        <h1>Smart Farming Starts Here</h1>
+        <p>Get weather updates, crop care advice, fertilizer guidance and water planning in one place.</p>
+        <a class="hero-button" href="#agriculture">Explore Tools</a>
+    </div>
+    <div class="hero-image">🌾 🌿 🌱</div>
+</section>
+
+<main>
+    <form method="POST">
+        <section class="panel" id="agriculture">
+            <h2>🌾 Agriculture Details</h2>
+            <p>Enter your farm details to receive basic farming guidance.</p>
+
+            <label>City or Town</label>
+            <input type="text" name="city" value="{{ city }}" required>
+
+            <label>Select Crop</label>
+            <select name="crop">
+                {% for c in ["Rice", "Tomato", "Maize", "Cotton", "Sugarcane", "Groundnut"] %}
+                <option value="{{ c }}" {% if request.form.get('crop', 'Rice') == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Crop Growth Stage</label>
+            <select name="stage">
+                {% for s in ["Sowing", "Growing", "Flowering", "Harvesting"] %}
+                <option value="{{ s }}" {% if request.form.get('stage', 'Growing') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Soil Type</label>
+            <select name="soil">
+                {% for s in ["Loamy", "Clay", "Sandy", "Black Soil", "Red Soil"] %}
+                <option value="{{ s }}" {% if request.form.get('soil', 'Loamy') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Farm Area (acres)</label>
+            <input type="number" name="area" min="0.1" step="0.1" value="{{ request.form.get('area', '1') }}" required>
+
+            <label>Recent Rainfall (mm, approximate)</label>
+            <input type="number" name="rainfall" min="0" step="1" value="{{ request.form.get('rainfall', '10') }}" required>
+        </section>
+
+        <section class="panel" id="disease">
+            <h2>🍃 Crop Disease Help</h2>
+            <p>Select a symptom visible on your crop.</p>
+
+            <label>Crop Symptom</label>
+            <select name="symptoms">
+                {% for s in ["None", "Yellow leaves", "Brown spots", "White powder", "Wilting", "Holes in leaves"] %}
+                <option value="{{ s }}" {% if request.form.get('symptoms', 'None') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </section>
+
+        <button class="submit-button" type="submit">🌿 Analyze My Farm</button>
+    </form>
+
+    {% if result %}
+    <section class="results">
+        <h2>📊 Your Farming Report</h2>
+
+        <div class="result-grid">
+            <article class="result-card" id="weather">
+                <h3>🌦️ Weather</h3>
+                {% if result.weather.error %}
+                    <p>{{ result.weather.error }}</p>
+                {% else %}
+                    <h2>{{ result.weather.city }}</h2>
+                    <p>Temperature: {{ result.weather.temperature }} °C</p>
+                    <p>Humidity: {{ result.weather.humidity }}%</p>
+                    <p>Current precipitation: {{ result.weather.rain }} mm</p>
+                    <p>Daily rain chance: {{ result.weather.rain_chance }}%</p>
+                {% endif %}
+            </article>
+
+            <article class="result-card" id="fertilizer">
+                <h3>🧪 Fertilizer Recommendation</h3>
+                <p>{{ result.fertilizer }}</p>
+                <p><strong>Soil:</strong> {{ request.form.get('soil', 'Loamy') }}</p>
+                <p><strong>Growth stage:</strong> {{ request.form.get('stage', 'Growing') }}</p>
+            </article>
+
+            <article class="result-card">
+                <h3>🔎 Crop Health Guidance</h3>
+                <p><strong>Symptom:</strong> {{ request.form.get('symptoms', 'None') }}</p>
+                <p>{{ result.disease }}</p>
+                <small>This is preliminary guidance, not a confirmed diagnosis.</small>
+            </article>
+
+            <article class="result-card" id="water">
+                <h3>💧 Water Usage Planner</h3>
+                {% if result.water_error %}
+                    <p>{{ result.water_error }}</p>
+                {% else %}
+                    <h2>{{ "{:,}".format(result.water) }} litres</h2>
+                    <p>Estimated planning amount for {{ result.area }} acre(s).</p>
+                    <p>{{ result.water_note }}</p>
+                {% endif %}
+            </article>
+        </div>
+    </section>
+    {% endif %}
+</main>
+
+<footer>
+    <p>AgriNova © 2026 | Smart and Sustainable Farming</p>
+    <p>Planning estimates only. Follow local agricultural expert advice.</p>
+</footer>
+
+</body>
+</html>
